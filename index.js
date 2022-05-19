@@ -6,6 +6,11 @@ const logger = require('morgan');
 const cors = require('cors');
 require('dotenv').config();
 
+/*
+* IMPORTAR RUTAS
+*/
+const user_routes = require('./routes/user_routes');
+
 // Node server
 const server = http.createServer(app);
 
@@ -25,7 +30,10 @@ app.use(cors())
 // Seguridad
 app.disable('x-powered-by')
 
-
+/*
+LLAMAR DE RUTAS
+*/
+user_routes(app);
 
 
 app.listen(process.env.PORT, (err) => {
