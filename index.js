@@ -4,12 +4,17 @@ const path = require('path');
 const http = require('http');
 const logger = require('morgan');
 const cors = require('cors');
+const passport = require('passport');
+
+
 require('dotenv').config();
 
+console.log('Primero lo primero empiezo en el index.js');
 /*
 * IMPORTAR RUTAS
 */
 const user_routes = require('./routes/user_routes');
+console.log('Despues');
 
 // Node server
 const server = http.createServer(app);
@@ -27,6 +32,12 @@ app.use(express.json())
 // Permite que se puedan hacer peticiones desde cualquier origen
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+require('./config/passport')(passport);
+
 // Seguridad
 app.disable('x-powered-by')
 

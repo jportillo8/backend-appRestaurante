@@ -1,7 +1,59 @@
 const db = require('../config/config');
+const bcrypt = require('bcrypt');
 const User = {};
 
-User.create = (user, result) => {
+console.log('Como requiero la base de datos, segundo voy a los modelos');
+
+User.findById = (id, result) => {
+    const sql = `
+    SELECT id, email, name, phone, image, password
+    FROM users
+    WHERE id = ?
+    `;
+    db.query(
+        sql,
+        [id],
+        (err, user) => {
+            if (err) {
+                console.log('Error:', err);
+                result(err, null);
+            }
+            else {
+                console.log('Usuario Obtenido:', user[0]);
+                result(null, user[0]);
+            }
+        }
+
+    )
+}
+
+User.findByEmail = (email, result) => {
+    console.log('Por medio de findByEmail buscamos el usuario <================');
+    const sql = `
+    SELECT id, email, name, phone, image, password
+    FROM users
+    WHERE email = ?
+    `;
+    db.query(
+        sql,
+        [email],
+        (err, user) => {
+            if (err) {
+                console.log('Error:', err);
+                result(err, null);
+            }
+            else {
+                // console.log('Usuario Obtenido  en =====>DB>>>>>>:', user[0]);
+                result(null, user[0]);
+            }
+        }
+
+    )
+}
+
+User.create = async (user, result) => {
+
+    const hash = await bcrypt.hash(user.password, 10);
 
     const sql = `
     INSERT INTO 
@@ -24,7 +76,7 @@ User.create = (user, result) => {
             user.name,
             user.phone,
             user.image,
-            user.password,
+            hash,
             new Date(),
             new Date()
         ],
