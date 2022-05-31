@@ -5,6 +5,8 @@ const http = require('http');
 const logger = require('morgan');
 const cors = require('cors');
 const passport = require('passport');
+const multer = require('multer');
+
 
 
 require('dotenv').config();
@@ -17,7 +19,7 @@ const user_routes = require('./routes/user_routes');
 console.log('Despues');
 
 // Node server
-const server = http.createServer(app);
+// const server = http.createServer(app);
 
 
 // Path to the public folder
@@ -33,18 +35,23 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cors())
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-require('./config/passport')(passport);
+// require('./config/passport')(passport);
 
 // Seguridad
 app.disable('x-powered-by')
 
+// Configuracion para poder subir imagenes a firebase
+const upload = multer({
+    storage: multer.memoryStorage()
+})
+
 /*
 LLAMAR DE RUTAS
 */
-user_routes(app);
+user_routes(app, upload);
 
 
 app.listen(process.env.PORT, (err) => {

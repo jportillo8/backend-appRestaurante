@@ -2,6 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
+const storage = require('../utils/cloud_storage');
 
 console.log('Coomom hacemos el llamado a las rutas entonces Usamos los controladores');
 module.exports = {
@@ -41,7 +42,7 @@ module.exports = {
                 }, keys.secretOrKey, { });
                 
                 const data = {
-                    id : myUser.id,
+                    id : `${myUser.id}`,
                     name: myUser.name,
                     email: myUser.email,
                     phone: myUser.phone,
@@ -84,6 +85,46 @@ module.exports = {
                 success: true,
                 message: 'Usuario creado con exito',
                 data: data // El id de el nuevo usuario
+            });
+        })
+    },
+    async registerWithImage(req, res) {
+
+        const user = JSON.parse(req.body.user)
+        const files = req.files // Capturo la imagen
+
+        if (files.length > 0) {
+            const path = `image_${Date.now()}`
+            const url = await storage(files[0], path)
+
+            if(url != undefined && url != null){
+                user.image = url;
+            }
+        }
+
+        User.create(user, (err, data) => {
+
+            if (err){
+                return res.status(501).json({
+                    success: false,
+                    message: 'Error al crear el usuario',
+                    error: err
+                });
+            }
+            
+            user.id = `${data}`;
+            const token = jwt.sign({
+                id: user.id,
+                email: user.email
+            }, keys.secretOrKey, { });
+
+            user.session = `JWT ${token}`;
+
+            
+            return res.status(201).json({
+                success: true,
+                message: 'Usuario creado con exito',
+                data: user
             });
         })
     }
