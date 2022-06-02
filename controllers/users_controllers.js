@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const keys = require('../config/keys');
 const storage = require('../utils/cloud_storage');
+const Rol = require('../models/rol');
 
 console.log('Coomom hacemos el llamado a las rutas entonces Usamos los controladores');
 module.exports = {
@@ -120,12 +121,21 @@ module.exports = {
 
             user.session = `JWT ${token}`;
 
-            
-            return res.status(201).json({
-                success: true,
-                message: 'Usuario creado con exito',
-                data: user
-            });
+            // Agregando rol al usuario
+            Rol.create(user.id, 3, (err, data) => {
+                if (err){
+                    return res.status(501).json({
+                        success: false,
+                        message: 'Error al crear el rol',
+                        error: err
+                    });
+                }
+                return res.status(201).json({
+                    success: true,
+                    message: 'Usuario creado con exito',
+                    data: user 
+                });
+            })
         })
     }
 }
