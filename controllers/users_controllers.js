@@ -48,7 +48,8 @@ module.exports = {
                     email: myUser.email,
                     phone: myUser.phone,
                     image: myUser.image,
-                    session: `JWT ${token}`
+                    session: `JWT ${token}`,
+                    roles: JSON.parse(myUser.roles)
                 }
                 return res.status(201).json({
                     success: true,

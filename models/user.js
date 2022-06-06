@@ -6,9 +6,35 @@ console.log('Como requiero la base de datos, segundo voy a los modelos');
 
 User.findById = (id, result) => {
     const sql = `
-    SELECT id, email, name, phone, image, password
-    FROM users
-    WHERE id = ?
+    SELECT 
+        U.id, 
+        U.email, 
+        U.name, 
+        U.phone, 
+        U.image, 
+        U.password,
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'id', R.id,
+                'name', R.name,
+                'image', R.image,
+                'route', R.route
+            )
+        ) AS roles
+    FROM 
+        users AS U
+    INNER JOIN
+        user_has_roles AS UHR
+    ON 
+        UHR.id_user = U.id
+    INNER JOIN
+        roles AS R
+    ON 
+        UHR.id_rol = R.id
+    WHERE 
+        id = ?
+    GROUP BY
+        U.id
     `;
     db.query(
         sql,
@@ -30,9 +56,35 @@ User.findById = (id, result) => {
 User.findByEmail = (email, result) => {
     console.log('Por medio de findByEmail buscamos el usuario <================');
     const sql = `
-    SELECT id, email, name, phone, image, password
-    FROM users
-    WHERE email = ?
+    SELECT 
+        U.id, 
+        U.email, 
+        U.name, 
+        U.phone, 
+        U.image, 
+        U.password,
+        JSON_ARRAYAGG(
+            JSON_OBJECT(
+                'id', R.id,
+                'name', R.name,
+                'image', R.image,
+                'route', R.route
+            )
+        ) AS roles
+    FROM 
+        users AS U
+    INNER JOIN
+        user_has_roles AS UHR
+    ON 
+        UHR.id_user = U.id
+    INNER JOIN
+        roles AS R
+    ON 
+        UHR.id_rol = R.id
+    WHERE 
+        email = ?
+    GROUP BY
+        U.id
     `;
     db.query(
         sql,
