@@ -7,7 +7,7 @@ console.log('Como requiero la base de datos, segundo voy a los modelos');
 User.findById = (id, result) => {
     const sql = `
     SELECT 
-        U.id, 
+        CONVERT(U.id, char) AS id,
         U.email, 
         U.name, 
         U.phone, 
@@ -15,7 +15,7 @@ User.findById = (id, result) => {
         U.password,
         JSON_ARRAYAGG(
             JSON_OBJECT(
-                'id', R.id,
+                'id', CONVERT(R.id, char),
                 'name', R.name,
                 'image', R.image,
                 'route', R.route
@@ -32,7 +32,7 @@ User.findById = (id, result) => {
     ON 
         UHR.id_rol = R.id
     WHERE 
-        id = ?
+        U.id = ?
     GROUP BY
         U.id
     `;
@@ -65,7 +65,7 @@ User.findByEmail = (email, result) => {
         U.password,
         JSON_ARRAYAGG(
             JSON_OBJECT(
-                'id', R.id,
+                'id', CONVERT(R.id, char),
                 'name', R.name,
                 'image', R.image,
                 'route', R.route
@@ -140,6 +140,76 @@ User.create = async (user, result) => {
             else {
                 console.log('Id del nuevo usuario:', res.insertId);
                 result(null, res.insertId);
+            }
+        }
+    )
+}
+
+User.update = (user, result) => {
+    const sql = `
+    UPDATE
+        users
+    SET
+        name = ?,
+        phone = ?,
+        image = ?,
+        updated_at = ?
+    WHERE
+        id = ?
+    `;
+
+    db.query(
+        sql,
+        [
+            user.name,
+            user.phone,
+            user.image,
+            new Date(),
+            user.id
+        ],
+        (err, res) => {
+            if (err) {
+                console.log('Error:', err);
+                result(err, null);
+            }
+            else {
+                console.log('Usuario actualizado:', user.id);
+                result(null, user.id);
+            }
+        }
+    )
+}
+
+User.updateWhithoutImage = (user, result) => {
+
+    const sql = `
+    UPDATE
+        users
+    SET
+        name = ?,
+        phone = ?,
+        updated_at = ?
+    WHERE
+        id = ?
+    `;
+
+    db.query
+    (
+        sql,
+        [
+            user.name,
+            user.phone,
+            new Date(),
+            user.id
+        ],
+        (err, res) => {
+            if (err) {
+                console.log('Error:', err);
+                result(err, null);
+            }
+            else {
+                console.log('Usuario actualizado:', user.id);
+                result(null, user.id);
             }
         }
     )

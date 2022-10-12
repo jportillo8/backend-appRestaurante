@@ -7,31 +7,31 @@ const Rol = require('../models/rol');
 
 console.log('Coomom hacemos el llamado a las rutas entonces Usamos los controladores');
 module.exports = {
-    
+
     // ====================== LOGIN ======================
-    login(req, res){
+    login(req, res) {
         console.log('========= Cuando hacemos la peticion a la ruta /login, estamos en el controlador ========');
         const email = req.body.email;
         const password = req.body.password;
         console.log(`CARGAMOS lo que esta en el body de la peticion ${email} y ${password}`);
 
         User.findByEmail(email, async (err, myUser) => {
-            if (err){
+            if (err) {
                 return res.status(501).json({
                     success: false,
                     message: 'Hubo un error con el registro del usuario',
                     error: err
                 });
             }
-            
-            if (!myUser){
+
+            if (!myUser) {
                 return res.status(401).json({
                     success: false,
                     message: 'El email no existe',
                     error: err
                 });
             }
-            
+
             // Esperamos que la contraseña sea correcta
             const isPasswordValid = await bcrypt.compareSync(password, myUser.password);
             if (isPasswordValid) {
@@ -40,10 +40,10 @@ module.exports = {
                 const token = jwt.sign({
                     id: myUser.id,
                     email: myUser.email
-                }, keys.secretOrKey, { });
-                
+                }, keys.secretOrKey, {});
+
                 const data = {
-                    id : `${myUser.id}`,
+                    id: `${myUser.id}`,
                     name: myUser.name,
                     email: myUser.email,
                     phone: myUser.phone,
@@ -54,7 +54,7 @@ module.exports = {
                 return res.status(201).json({
                     success: true,
                     message: 'El usuario se ha logueado correctamente',
-                    data: data 
+                    data: data
                 });
             }
             else {
@@ -64,25 +64,25 @@ module.exports = {
                     message: 'El email o la contraseña no coinciden',
                     error: err
                 });
-            }            
+            }
         })
     },
 
-// ====================== REGISTER ======================
+    // ====================== REGISTER ======================
     register(req, res) {
 
         const user = req.body // Capturo los datos del usuario 
         // Creando un nuevo usuario
         User.create(user, (err, data) => {
 
-            if (err){
+            if (err) {
                 return res.status(501).json({
                     success: false,
                     message: 'Error al crear el usuario',
                     error: err
                 });
             }
-            
+
             return res.status(201).json({
                 success: true,
                 message: 'Usuario creado con exito',
@@ -99,32 +99,32 @@ module.exports = {
             const path = `image_${Date.now()}`
             const url = await storage(files[0], path)
 
-            if(url != undefined && url != null){
+            if (url != undefined && url != null) {
                 user.image = url;
             }
         }
 
         User.create(user, (err, data) => {
 
-            if (err){
+            if (err) {
                 return res.status(501).json({
                     success: false,
                     message: 'Error al crear el usuario',
                     error: err
                 });
             }
-            
+
             user.id = `${data}`;
             const token = jwt.sign({
                 id: user.id,
                 email: user.email
-            }, keys.secretOrKey, { });
+            }, keys.secretOrKey, {});
 
             user.session = `JWT ${token}`;
 
             // Agregando rol al usuario
             Rol.create(user.id, 3, (err, data) => {
-                if (err){
+                if (err) {
                     return res.status(501).json({
                         success: false,
                         message: 'Error al crear el rol',
@@ -134,7 +134,89 @@ module.exports = {
                 return res.status(201).json({
                     success: true,
                     message: 'Usuario creado con exito',
-                    data: user 
+                    data: user
+                });
+            })
+        })
+    },
+    // ====================== UPDATE ======================
+    async updateWithImage(req, res) {
+
+        const user = JSON.parse(req.body.user)
+        const files = req.files // Capturo la imagen
+
+        if (files.length > 0) {
+            const path = `image_${Date.now()}`
+            const url = await storage(files[0], path)
+
+            if (url != undefined && url != null) {
+                user.image = url;
+            }
+        }
+
+        User.update(user, (err, data) => {
+
+            if (err) {
+                return res.status(501).json({
+                    success: false,
+                    message: 'Error al crear el usuario',
+                    error: err
+                });
+            }
+
+            User.findById(data, (err, myData) => {
+                if (err) {
+                    return res.status(501).json({
+                        success: false,
+                        message: 'Error al crear el usuario',
+                        error: err
+                    });
+                }
+
+                myData.session = user.session;
+                myData.roles = JSON.parse(myData.roles);
+    
+                return res.status(201).json({
+                    success: true,
+                    message: 'El usuario se actualizo correctamente',
+                    data: myData
+                });
+            })
+
+            
+        })
+    },
+
+    async updateWitoutImage(req, res) {
+
+        const user = req.body
+
+        User.updateWhithoutImage(user, (err, data) => {
+
+            if (err) {
+                return res.status(501).json({
+                    success: false,
+                    message: 'Error al crear el usuario',
+                    error: err
+                });
+            }
+
+            User.findById(data, (err, myData) => {
+                if (err) {
+                    return res.status(501).json({
+                        success: false,
+                        message: 'Error al crear el usuario',
+                        error: err
+                    });
+                }
+
+                myData.session = user.session;
+                myData.roles = JSON.parse(myData.roles);
+    
+                return res.status(201).json({
+                    success: true,
+                    message: 'El usuario se actualizo correctamente',
+                    data: myData
                 });
             })
         })
