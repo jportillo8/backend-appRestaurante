@@ -16,6 +16,7 @@ console.log('Primero lo primero empiezo en el index.js');
 * IMPORTAR RUTAS
 */
 const user_routes = require('./routes/user_routes');
+const categorie_routes = require('./routes/category_routes');
 console.log('Despues');
 
 // Node server
@@ -52,6 +53,7 @@ const upload = multer({
 LLAMAR DE RUTAS
 */
 user_routes(app, upload);
+categorie_routes(app);
 
 
 app.listen(process.env.PORT, (err) => {

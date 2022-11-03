@@ -1,7 +1,8 @@
 const mysql = require('mysql');
 
 
-const db = mysql.createConnection({
+// const db = mysql.createConnection({
+const db = mysql.createPool({
     host: 'localhost',
     user: 'root',
     password: 'password',
@@ -9,7 +10,7 @@ const db = mysql.createConnection({
 });
 console.log('Primero configurar la conexión a la base de datos');
 
-db.connect((err) =>  {
+db.getConnection((err) =>  {
     console.log('Conecto a la base de datos');
     if(err) throw err;
     console.log('DATABASE CONNECTED!!');
